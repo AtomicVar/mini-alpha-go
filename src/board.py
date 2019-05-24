@@ -31,6 +31,8 @@ class Board:
 
     def exec(self, color: int, loc: tuple) -> None:
         row, col = loc
+        if self.matrix[row][col] == -color:
+            self.scores[-color] -= 1
         self.matrix[row][col] = color
         self.avail_steps[-color] = self.get_avail_steps(-color)
         self.color = -self.color

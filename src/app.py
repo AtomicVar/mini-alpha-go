@@ -24,6 +24,7 @@ from board import Board, B, W
 GRID_SIZE = 40
 OFFSET = 10
 BD_SIZE = 340
+SIDER_L = 400
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))  # 脚本目录路径
 
@@ -78,13 +79,13 @@ class App(QMainWindow):
         banner = QLabel("Mini Alpha-Go", self)
         banner.setFont(QFont("Arial", 20, QFont.Bold, True))
         banner.resize(200, 40)
-        banner.move(400, 20)
+        banner.move(SIDER_L, 20)
 
         # readme
         readme = QLabel("Keyboard shortcuts:\n > Esc/q: quit", self)
         readme.setFont(QFont("Consolas", 12))
         readme.resize(200, 50)
-        readme.move(400, 70)
+        readme.move(SIDER_L, 70)
 
         # Score board
         self.cur_player = QLabel("Player:", self)
@@ -98,16 +99,16 @@ class App(QMainWindow):
         self.name.setStyleSheet(
             r"QLabel {color: " + ["", "black", "white"][self.board.color] + "}"
         )
-        self.b_score = QLabel("8 - ", self)
-        self.b_score.setFont(QFont("Arial", 14, QFont.Bold))
-        self.b_score.resize(40, 40)
-        self.b_score.move(500, 200)
+        self.b_score = QLabel("BLACK: 12", self)
+        self.b_score.setFont(QFont("Consolas", 14, QFont.Bold))
+        self.b_score.resize(100, 40)
+        self.b_score.move(SIDER_L, 230)
         self.b_score.setStyleSheet(r"QLabel {color: black}")
-        self.w_score = QLabel("8", self)
-        self.w_score.setFont(QFont("Arial", 14, QFont.Bold))
-        self.w_score.resize(40, 40)
-        self.w_score.move(550, 200)
-        self.b_score.setStyleSheet(r"QLabel {color: black}")
+        self.w_score = QLabel("WHITE: 12", self)
+        self.w_score.setFont(QFont("Consolas", 14, QFont.Bold))
+        self.w_score.resize(100, 40)
+        self.w_score.move(SIDER_L, 250)
+        self.w_score.setStyleSheet(r"QLabel {color: white}")
 
         # Chess board
         chessbd = QLabel(self)
@@ -133,6 +134,8 @@ class App(QMainWindow):
         self.name.setStyleSheet(
             r"QLabel {color: " + ["", "black", "white"][self.board.color] + "}"
         )
+        self.b_score.setText("BLACK: %d" % self.board.scores[B])
+        self.w_score.setText("WHITE: %d" % self.board.scores[W])
 
     def draw_pieces(self):
         self.pieces = []
@@ -199,8 +202,6 @@ class App(QMainWindow):
             self.pieces[prev_i][prev_j].setPixmap(self.empty)
             self.pieces[prev_i][prev_j].color = None
 
-            if self.pieces[i][j].color is not None:
-                self.board.scores[-old_color] -= 1
             # update scoreboard
             self.render_scoreboard()
 
