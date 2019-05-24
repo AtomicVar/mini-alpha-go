@@ -185,7 +185,7 @@ class App(QMainWindow):
         if self.pieces[i][j].is_candidate:
             old_color = self.board.color
 
-            self.board.exec(self.board.color, self.selected_index, sender.index)
+            self.board.exec(self.selected_index, sender.index)
 
             self.avail_steps_cache.remove((i, j))
             self.pieces[i][j].is_candidate = False
