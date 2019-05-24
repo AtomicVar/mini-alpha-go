@@ -11,7 +11,7 @@ B = 1
 W = -1
 
 
-class Board():
+class Board:
     def __init__(self):
         self.matrix = [x[:] for x in [[0] * 8] * 8]  # 2d array
         for i in range(1, 7):
@@ -98,8 +98,11 @@ class Board():
                                 steps[(i, j)] = [(i - n_col, j)]
 
                     # 向右上走
-                    if i - n_md >= 0 and j + n_md < 8 and self.matrix[
-                            i - n_md][j + n_md] != color:
+                    if (
+                        i - n_md >= 0
+                        and j + n_md < 8
+                        and self.matrix[i - n_md][j + n_md] != color
+                    ):
                         no_enemy = True
                         for d in range(1, n_md):
                             if self.matrix[i - d][j + d] == -color:
@@ -112,8 +115,11 @@ class Board():
                                 steps[(i, j)] = [(i - n_md, j + n_md)]
 
                     # 向左下走
-                    if i + n_md < 8 and j - n_md >= 0 and self.matrix[
-                            i + n_md][j - n_md] != color:
+                    if (
+                        i + n_md < 8
+                        and j - n_md >= 0
+                        and self.matrix[i + n_md][j - n_md] != color
+                    ):
                         no_enemy = True
                         for d in range(1, n_md):
                             if self.matrix[i + d][j - d] == -color:
@@ -126,8 +132,11 @@ class Board():
                                 steps[(i, j)] = [(i + n_md, j - n_md)]
 
                     # 向左上走
-                    if i - n_pd >= 0 and j - n_pd >= 0 and self.matrix[
-                            i - n_pd][j - n_pd] != color:
+                    if (
+                        i - n_pd >= 0
+                        and j - n_pd >= 0
+                        and self.matrix[i - n_pd][j - n_pd] != color
+                    ):
                         no_enemy = True
                         for d in range(1, n_pd):
                             if self.matrix[i - d][j - d] == -color:
@@ -140,8 +149,11 @@ class Board():
                                 steps[(i, j)] = [(i - n_pd, j - n_pd)]
 
                     # 向右下走
-                    if i + n_pd < 8 and j + n_pd < 8 and self.matrix[i + n_pd][
-                            j + n_pd] != color:
+                    if (
+                        i + n_pd < 8
+                        and j + n_pd < 8
+                        and self.matrix[i + n_pd][j + n_pd] != color
+                    ):
                         no_enemy = True
                         for d in range(1, n_pd):
                             if self.matrix[i + d][j + d] == -color:
@@ -165,6 +177,7 @@ class Board():
 
     def print_board(self) -> None:
         from pprint import pprint
+
         pprint(self.matrix)
 
 

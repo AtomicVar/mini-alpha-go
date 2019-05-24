@@ -5,11 +5,19 @@ import sys
 import os
 from os.path import join
 import time
-from PyQt5.QtWidgets import (QApplication, QWidget, QMainWindow,
-                             QDesktopWidget, QLabel, QHBoxLayout, QVBoxLayout,
-                             QGridLayout, QPushButton, QLCDNumber)
-from PyQt5.QtGui import (QPainter, QPalette, QColor, QPixmap, QFont, QIcon,
-                         QMouseEvent)
+from PyQt5.QtWidgets import (
+    QApplication,
+    QWidget,
+    QMainWindow,
+    QDesktopWidget,
+    QLabel,
+    QHBoxLayout,
+    QVBoxLayout,
+    QGridLayout,
+    QPushButton,
+    QLCDNumber,
+)
+from PyQt5.QtGui import QPainter, QPalette, QColor, QPixmap, QFont, QIcon, QMouseEvent
 from PyQt5.QtCore import pyqtSignal, Qt
 from board import Board, B, W
 
@@ -22,6 +30,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))  # 脚本目录路径
 
 class Piece(QLabel):
     """ Piece: clickable QLabel """
+
     clicked = pyqtSignal()
 
     def __init(self, parent):
@@ -34,21 +43,21 @@ class Piece(QLabel):
 class App(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.title = 'Mini Alpha-Go'
+        self.title = "Mini Alpha-Go"
         self.width = 640
         self.height = 360
 
         self.board = Board()
 
-        self.black = QPixmap(join(SCRIPT_DIR, '../assets/black.png'))
-        self.white = QPixmap(join(SCRIPT_DIR, '../assets/white.png'))
-        self.black_h = QPixmap(join(SCRIPT_DIR, '../assets/black_half.png'))
-        self.white_h = QPixmap(join(SCRIPT_DIR, '../assets/white_half.png'))
-        self.chessbd = QPixmap(join(SCRIPT_DIR,
-                                    '../assets/chessbd.png')).scaled(
-                                        BD_SIZE, BD_SIZE)
+        self.black = QPixmap(join(SCRIPT_DIR, "../assets/black.png"))
+        self.white = QPixmap(join(SCRIPT_DIR, "../assets/white.png"))
+        self.black_h = QPixmap(join(SCRIPT_DIR, "../assets/black_half.png"))
+        self.white_h = QPixmap(join(SCRIPT_DIR, "../assets/white_half.png"))
+        self.chessbd = QPixmap(join(SCRIPT_DIR, "../assets/chessbd.png")).scaled(
+            BD_SIZE, BD_SIZE
+        )
         self.empty = QPixmap()
-        self.icon_path = join(SCRIPT_DIR, '../assets/black.png')
+        self.icon_path = join(SCRIPT_DIR, "../assets/black.png")
 
         self.initUI()
 
@@ -62,43 +71,43 @@ class App(QMainWindow):
         # Set window background color to green
         self.setAutoFillBackground(True)
         p = self.palette()
-        p.setColor(self.backgroundRole(), QColor('#6F8F5F'))
+        p.setColor(self.backgroundRole(), QColor("#6F8F5F"))
         self.setPalette(p)
 
         # banner
-        banner = QLabel('Mini Alpha-Go', self)
+        banner = QLabel("Mini Alpha-Go", self)
         banner.setFont(QFont("Arial", 20, QFont.Bold, True))
         banner.resize(200, 40)
         banner.move(400, 20)
 
         # readme
-        readme = QLabel('Keyboard shortcuts:\n > Esc/q: quit', self)
-        readme.setFont(QFont('Consolas', 12))
+        readme = QLabel("Keyboard shortcuts:\n > Esc/q: quit", self)
+        readme.setFont(QFont("Consolas", 12))
         readme.resize(200, 50)
         readme.move(400, 70)
 
         # Score board
-        self.cur_player = QLabel('Player:', self)
-        self.cur_player.setFont(QFont('Arial', 14))
+        self.cur_player = QLabel("Player:", self)
+        self.cur_player.setFont(QFont("Arial", 14))
         self.cur_player.resize(150, 40)
         self.cur_player.move(400, 150)
-        self.name = QLabel('%s' % ['', 'BLACK', 'WHITE'][self.board.color],
-                           self)
-        self.name.setFont(QFont('Arial', 14, QFont.Bold))
+        self.name = QLabel("%s" % ["", "BLACK", "WHITE"][self.board.color], self)
+        self.name.setFont(QFont("Arial", 14, QFont.Bold))
         self.name.resize(100, 40)
         self.name.move(480, 150)
-        self.name.setStyleSheet(r'QLabel {color: ' +
-                                ['', 'black', 'white'][self.board.color] + '}')
-        self.b_score = QLabel('8 - ', self)
-        self.b_score.setFont(QFont('Arial', 14, QFont.Bold))
+        self.name.setStyleSheet(
+            r"QLabel {color: " + ["", "black", "white"][self.board.color] + "}"
+        )
+        self.b_score = QLabel("8 - ", self)
+        self.b_score.setFont(QFont("Arial", 14, QFont.Bold))
         self.b_score.resize(40, 40)
         self.b_score.move(500, 200)
-        self.b_score.setStyleSheet(r'QLabel {color: black}')
-        self.w_score = QLabel('8', self)
-        self.w_score.setFont(QFont('Arial', 14, QFont.Bold))
+        self.b_score.setStyleSheet(r"QLabel {color: black}")
+        self.w_score = QLabel("8", self)
+        self.w_score.setFont(QFont("Arial", 14, QFont.Bold))
         self.w_score.resize(40, 40)
         self.w_score.move(550, 200)
-        self.b_score.setStyleSheet(r'QLabel {color: black}')
+        self.b_score.setStyleSheet(r"QLabel {color: black}")
 
         # Chess board
         chessbd = QLabel(self)
@@ -109,7 +118,7 @@ class App(QMainWindow):
         self.draw_pieces()
 
         # Status bar
-        self.statusBar().showMessage('Ready.')
+        self.statusBar().showMessage("Ready.")
 
         self.show()
 
@@ -120,9 +129,10 @@ class App(QMainWindow):
         self.move(qr.topLeft())
 
     def render_scoreboard(self):
-        self.name.setText(['', 'BLACK', 'WHITE'][self.board.color])
-        self.name.setStyleSheet(r'QLabel {color: ' +
-                                ['', 'black', 'white'][self.board.color] + '}')
+        self.name.setText(["", "BLACK", "WHITE"][self.board.color])
+        self.name.setStyleSheet(
+            r"QLabel {color: " + ["", "black", "white"][self.board.color] + "}"
+        )
 
     def draw_pieces(self):
         self.pieces = []
@@ -150,20 +160,20 @@ class App(QMainWindow):
             self.pieces.append(row)
 
     def keyPressEvent(self, e):
-        if e.key() in [Qt.Key_Escape, ord('Q')]:
+        if e.key() in [Qt.Key_Escape, ord("Q")]:
             self.close()
         else:
             print(e.key())
 
     def mouseClickEvent(self):
         sender = self.sender()
-        self.statusBar().showMessage(str(sender.index) + ' is clicked!!')
+        self.statusBar().showMessage(str(sender.index) + " is clicked!!")
         i, j = sender.index
 
         # clear previous background color and recover its image
         if self.selected_index is not None:
             prev_i, prev_j = self.selected_index
-            self.pieces[prev_i][prev_j].setStyleSheet(r'QLabel {}')
+            self.pieces[prev_i][prev_j].setStyleSheet(r"QLabel {}")
             if self.pieces[prev_i][prev_j].color == B:
                 self.pieces[prev_i][prev_j].setPixmap(self.black)
             elif self.pieces[prev_i][prev_j].color == W:
@@ -205,7 +215,7 @@ class App(QMainWindow):
             color = self.pieces[i][j].color
             # set new background color
             self.selected_index = sender.index
-            self.pieces[i][j].setStyleSheet(r'QLabel {background-color: red}')
+            self.pieces[i][j].setStyleSheet(r"QLabel {background-color: red}")
 
             # set new image
             if color == B:
@@ -219,7 +229,9 @@ class App(QMainWindow):
                 avail_i, avail_j = step
                 # can eat an enemy
                 if self.pieces[avail_i][avail_j].color is not None:
-                    self.pieces[avail_i][avail_j].setStyleSheet(r'QLabel {background-color: blue}')
+                    self.pieces[avail_i][avail_j].setStyleSheet(
+                        r"QLabel {background-color: blue}"
+                    )
                 elif color == B:
                     self.pieces[avail_i][avail_j].setPixmap(self.black_h)
                 else:
@@ -228,7 +240,7 @@ class App(QMainWindow):
             self.avail_steps_cache = avail_steps[:]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     ex = App()
     sys.exit(app.exec_())
