@@ -1,10 +1,33 @@
 """
 棋盘类：Board
 
-矩阵数字含义：
-  0 - 无棋
-  1 - 黑棋
- -1 - 白棋
+可访问接口：
+
+    matrix (2d-array) 数字含义：
+        0 - 无棋
+        1 - 黑棋
+       -1 - 白棋
+
+    color (int): 当前准备下棋的颜色
+
+    avail_steps (dict): 存储当前黑白方能走的位置
+        {
+            B: {
+                (0, 1): [(1, 1), (2, 2)]
+                (4, 3): [(0, 0)],
+                (5, 5): [],
+                ...
+            },
+            W: {
+                ...
+            }
+        }
+
+    counts (dict): 当前双方棋子数量
+        {
+            B: 12,
+            W: 12
+        }
 """
 
 B = 1
@@ -43,7 +66,7 @@ class Board:
         # may update counts
         if self.matrix[t_row][t_col] == -self.color:
             self.counts[-self.color] -= 1
-        
+
         # set target
         self.matrix[t_row][t_col] = self.color
 
