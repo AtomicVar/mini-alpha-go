@@ -28,6 +28,8 @@
             B: 12,
             W: 12
         }
+    
+    is_terminal (bool): 是否处于终止状态（双方都无棋可下，或一方棋子已经被吃完）
 """
 
 B = 1
@@ -51,6 +53,7 @@ class Board:
         self.color = B
         self.avail_steps = {B: self.get_avail_steps(B), W: {}}
         self.counts = {B: 12, W: 12}
+        self.is_terminal = False
 
     def exec(self, source: tuple, target: tuple) -> None:
         t_row, t_col = target
@@ -73,8 +76,19 @@ class Board:
         # update available cache
         self.avail_steps[-self.color] = self.get_avail_steps(-self.color)
 
+        # if enemy cannot go, also update my available cache, and do not invert color
+        if len(self.avail_steps[-self.color]) == 0:
+            self.avail_steps[self.color] = self.get_avail_steps(self.color)
+            # if me cannot go either, set current board to is_terminal
+            if len(self.avail_steps[self.color]) == 0:
+                self.is_terminal = True
         # invert current color
-        self.color *= -1
+        else:
+            self.color *= -1
+        
+        # test if is terminal
+        if self.counts[-self.color] == 0:
+            self.is_terminal = True
 
     def get_avail_steps(self, color: int) -> dict:
         steps = {}
