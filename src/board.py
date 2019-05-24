@@ -29,12 +29,24 @@ class Board:
         self.avail_steps = {B: self.get_avail_steps(B), W: {}}
         self.counts = {B: 12, W: 12}
 
-    def exec(self, color: int, loc: tuple) -> None:
-        row, col = loc
-        if self.matrix[row][col] == -color:
+    def exec(self, color: int, source: tuple, target: tuple) -> None:
+        t_row, t_col = target
+        s_row, s_col = source
+
+        # clear source
+        self.matrix[s_row][s_col] = 0
+
+        # may update counts
+        if self.matrix[t_row][t_col] == -color:
             self.counts[-color] -= 1
-        self.matrix[row][col] = color
+        
+        # set target
+        self.matrix[t_row][t_col] = color
+
+        # update available cache
         self.avail_steps[-color] = self.get_avail_steps(-color)
+
+        # invert current color
         self.color = -self.color
 
     def get_avail_steps(self, color: int) -> dict:

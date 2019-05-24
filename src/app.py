@@ -23,8 +23,8 @@ from board import Board, B, W
 
 GRID_SIZE = 40
 OFFSET = 10
-BD_SIZE = 340
-SIDER_L = 400
+BD_SIZE = 340  # chess board size
+SIDER_L = 400  # margin-left of sider
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))  # 脚本目录路径
 
@@ -153,12 +153,9 @@ class App(QMainWindow):
                 row.append(label)
                 if self.board.matrix[i][j] == B:
                     label.setPixmap(self.black)
-                    label.color = B
                 elif self.board.matrix[i][j] == W:
                     label.setPixmap(self.white)
-                    label.color = W
                 else:
-                    label.color = None
                     continue
             self.pieces.append(row)
 
@@ -177,9 +174,9 @@ class App(QMainWindow):
         if self.selected_index is not None:
             prev_i, prev_j = self.selected_index
             self.pieces[prev_i][prev_j].setStyleSheet(r"QLabel {}")
-            if self.pieces[prev_i][prev_j].color == B:
+            if self.board.matrix[prev_i][prev_j] == B:
                 self.pieces[prev_i][prev_j].setPixmap(self.black)
-            elif self.pieces[prev_i][prev_j].color == W:
+            elif self.board.matrix[prev_i][prev_j] == W:
                 self.pieces[prev_i][prev_j].setPixmap(self.white)
             else:
                 self.pieces[prev_i][prev_j].setPixmap(self.empty)
@@ -188,11 +185,11 @@ class App(QMainWindow):
         if self.pieces[i][j].is_candidate:
             old_color = self.board.color
 
-            self.board.exec(self.board.color, (i, j))
+            self.board.exec(self.board.color, self.selected_index, sender.index)
 
             self.avail_steps_cache.remove((i, j))
             self.pieces[i][j].is_candidate = False
-            self.pieces[i][j].color = old_color
+            self.pieces[i][j].setStyleSheet(r'QLabel {}')
             if old_color == B:
                 self.pieces[i][j].setPixmap(self.black)
             else:
@@ -200,7 +197,6 @@ class App(QMainWindow):
 
             prev_i, prev_j = self.selected_index
             self.pieces[prev_i][prev_j].setPixmap(self.empty)
-            self.pieces[prev_i][prev_j].color = None
 
             # update scoreboard
             self.render_scoreboard()
@@ -208,32 +204,33 @@ class App(QMainWindow):
         # clear previous available steps
         for step in self.avail_steps_cache:
             cache_i, cache_j = step
-            self.pieces[cache_i][cache_j].setPixmap(self.empty)
+            if self.board.matrix[cache_i][cache_j] == 0:
+                self.pieces[cache_i][cache_j].setPixmap(self.empty)
+            self.pieces[cache_i][cache_j].setStyleSheet(r"QLabel {}")
             self.pieces[cache_i][cache_j].is_candidate = False
 
         # highlight a piece
-        if self.pieces[i][j].color == self.board.color:
-            color = self.pieces[i][j].color
+        if self.board.matrix[i][j] == self.board.color:
             # set new background color
             self.selected_index = sender.index
             self.pieces[i][j].setStyleSheet(r"QLabel {background-color: red}")
 
             # set new image
-            if color == B:
+            if self.board.color == B:
                 self.pieces[i][j].setPixmap(self.black_h)
             else:
                 self.pieces[i][j].setPixmap(self.white_h)
 
             # show available steps
-            avail_steps = self.board.get_avail_steps_in((i, j), color)
+            avail_steps = self.board.get_avail_steps_in((i, j), self.board.color)
             for step in avail_steps:
                 avail_i, avail_j = step
                 # can eat an enemy
-                if self.pieces[avail_i][avail_j].color is not None:
+                if self.board.matrix[avail_i][avail_j] != 0:
                     self.pieces[avail_i][avail_j].setStyleSheet(
                         r"QLabel {background-color: blue}"
                     )
-                elif color == B:
+                elif self.board.color == B:
                     self.pieces[avail_i][avail_j].setPixmap(self.black_h)
                 else:
                     self.pieces[avail_i][avail_j].setPixmap(self.white_h)
