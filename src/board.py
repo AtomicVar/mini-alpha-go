@@ -27,12 +27,12 @@ class Board:
 
         self.color = B
         self.avail_steps = {B: self.get_avail_steps(B), W: {}}
-        self.scores = {B: 8, W: 8}
+        self.counts = {B: 12, W: 12}
 
     def exec(self, color: int, loc: tuple) -> None:
         row, col = loc
         if self.matrix[row][col] == -color:
-            self.scores[-color] -= 1
+            self.counts[-color] -= 1
         self.matrix[row][col] = color
         self.avail_steps[-color] = self.get_avail_steps(-color)
         self.color = -self.color

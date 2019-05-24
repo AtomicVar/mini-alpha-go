@@ -101,12 +101,12 @@ class App(QMainWindow):
         )
         self.b_score = QLabel("BLACK: 12", self)
         self.b_score.setFont(QFont("Consolas", 14, QFont.Bold))
-        self.b_score.resize(100, 40)
+        self.b_score.resize(110, 40)
         self.b_score.move(SIDER_L, 230)
         self.b_score.setStyleSheet(r"QLabel {color: black}")
         self.w_score = QLabel("WHITE: 12", self)
         self.w_score.setFont(QFont("Consolas", 14, QFont.Bold))
-        self.w_score.resize(100, 40)
+        self.w_score.resize(110, 40)
         self.w_score.move(SIDER_L, 250)
         self.w_score.setStyleSheet(r"QLabel {color: white}")
 
@@ -134,8 +134,8 @@ class App(QMainWindow):
         self.name.setStyleSheet(
             r"QLabel {color: " + ["", "black", "white"][self.board.color] + "}"
         )
-        self.b_score.setText("BLACK: %d" % self.board.scores[B])
-        self.w_score.setText("WHITE: %d" % self.board.scores[W])
+        self.b_score.setText("BLACK: %d" % self.board.counts[B])
+        self.w_score.setText("WHITE: %d" % self.board.counts[W])
 
     def draw_pieces(self):
         self.pieces = []
