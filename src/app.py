@@ -1,32 +1,53 @@
 """
 Mini Alpha-Go 主 GUI 程序
 """
-import sys
+import argparse
 import os
-from os.path import join
+import sys
+from copy import deepcopy
 import time
+from os.path import join
+
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtGui import QColor, QFont, QIcon, QMouseEvent, QPainter, QPalette, QPixmap
 from PyQt5.QtWidgets import (
     QApplication,
-    QWidget,
-    QMainWindow,
     QDesktopWidget,
-    QLabel,
-    QHBoxLayout,
-    QVBoxLayout,
     QGridLayout,
-    QPushButton,
+    QHBoxLayout,
+    QLabel,
     QLCDNumber,
+    QMainWindow,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
 )
-from PyQt5.QtGui import QPainter, QPalette, QColor, QPixmap, QFont, QIcon, QMouseEvent
-from PyQt5.QtCore import pyqtSignal, Qt
-from board import Board, B, W
+
+from env.board import B, Board, W
 
 GRID_SIZE = 40
 OFFSET = 10
 BD_SIZE = 340  # chess board size
 SIDER_L = 400  # margin-left of sider
+NAMES = ["", "BLACK", "WHITE"]
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))  # 脚本目录路径
+
+parser = argparse.ArgumentParser(description="Mini Alpha-Go.")
+parser.add_argument(
+    "-a",
+    "--engine_a",
+    type=str,
+    default="human",
+    help="Engine for player a (black). Default: human.",
+)
+parser.add_argument(
+    "-b",
+    "--engine_b",
+    type=str,
+    default="human",
+    help="Engine for player b (white). Default: human.",
+)
 
 
 class Piece(QLabel):
@@ -42,13 +63,21 @@ class Piece(QLabel):
 
 
 class App(QMainWindow):
-    def __init__(self):
+    round_switched = pyqtSignal()
+
+    def __init__(self, engine_a: str, engine_b: str):
         super().__init__()
         self.title = "Mini Alpha-Go"
         self.width = 640
         self.height = 360
 
         self.board = Board()
+        self.rounds = 0
+
+        Engine_A = __import__("engines." + engine_a).__dict__[engine_a].engine
+        Engine_B = __import__("engines." + engine_b).__dict__[engine_b].engine
+        self.engine = ["", Engine_A(), Engine_B()]
+        self.round_switched.connect(self.run_game)
 
         self.black = QPixmap(join(SCRIPT_DIR, "../assets/black.png"))
         self.white = QPixmap(join(SCRIPT_DIR, "../assets/white.png"))
@@ -92,23 +121,26 @@ class App(QMainWindow):
         self.cur_player.setFont(QFont("Arial", 14))
         self.cur_player.resize(150, 40)
         self.cur_player.move(400, 150)
-        self.name = QLabel("%s" % ["", "BLACK", "WHITE"][self.board.color], self)
+
+        self.name = QLabel("%s" % NAMES[self.board.color], self)
         self.name.setFont(QFont("Arial", 14, QFont.Bold))
         self.name.resize(100, 40)
         self.name.move(480, 150)
-        self.name.setStyleSheet(
-            r"QLabel {color: " + ["", "black", "white"][self.board.color] + "}"
-        )
+        self.name.setStyleSheet(r"QLabel {color: " + NAMES[self.board.color] + "}")
+
         self.b_score = QLabel("BLACK: 12", self)
         self.b_score.setFont(QFont("Consolas", 14, QFont.Bold))
         self.b_score.resize(110, 40)
         self.b_score.move(SIDER_L, 230)
         self.b_score.setStyleSheet(r"QLabel {color: black}")
+
         self.w_score = QLabel("WHITE: 12", self)
         self.w_score.setFont(QFont("Consolas", 14, QFont.Bold))
         self.w_score.resize(110, 40)
         self.w_score.move(SIDER_L, 250)
         self.w_score.setStyleSheet(r"QLabel {color: white}")
+
+        # time duration
 
         # Chess board
         chessbd = QLabel(self)
@@ -121,7 +153,31 @@ class App(QMainWindow):
         # Status bar
         self.statusBar().showMessage("Ready.")
 
+        # show ui
         self.show()
+
+    def run_game(self):
+        if not self.board.is_terminal:
+            # black first
+            if self.engine[self.board.color] != "human":
+                source, target = self.engine[self.board.color].exec(deepcopy(self.board))
+                if source is  None:
+                    self.statusBar().showMessage(
+                        "%s cannot go, switched to %s again!"
+                        % (NAMES[-self.board.color], NAMES[self.board.color])
+                    )
+                else:
+                    if self.board.matrix[target[0]][target[1]] != 0:
+                        self.statusBar().showMessage(
+                            "%s ate 1 %s!" % (NAMES[self.board.color], NAMES[-self.board.color])
+                        )
+                    else:
+                        self.statusBar().showMessage("%s moved." % NAMES[self.board.color])
+
+                self.board.exec(source, target)
+
+                self.update_pieces(source, target)
+                self.render_scoreboard()
 
     def center(self):
         qr = self.frameGeometry()
@@ -130,10 +186,8 @@ class App(QMainWindow):
         self.move(qr.topLeft())
 
     def render_scoreboard(self):
-        self.name.setText(["", "BLACK", "WHITE"][self.board.color])
-        self.name.setStyleSheet(
-            r"QLabel {color: " + ["", "black", "white"][self.board.color] + "}"
-        )
+        self.name.setText(NAMES[self.board.color])
+        self.name.setStyleSheet(r"QLabel {color: " + NAMES[self.board.color] + "}")
         self.b_score.setText("BLACK: %d" % self.board.counts[B])
         self.w_score.setText("WHITE: %d" % self.board.counts[W])
 
@@ -158,6 +212,13 @@ class App(QMainWindow):
                 else:
                     continue
             self.pieces.append(row)
+    
+    def update_pieces(self, source, target):
+        for i in range(8):
+            for j in range(8):
+                self.pieces[i][j].setPixmap([self.empty, self.black, self.white][self.board.matrix[i][j]])
+                self.pieces[i][j].is_candidate = False
+                self.pieces[i][j].setStyleSheet(r"QLabel {}")
 
     def keyPressEvent(self, e):
         if e.key() in [Qt.Key_Escape, ord("Q")]:
@@ -166,8 +227,9 @@ class App(QMainWindow):
             print(e.key())
 
     def mouseClickEvent(self):
+        moved = False
         sender = self.sender()
-        self.statusBar().showMessage(str(sender.index) + " is clicked!!")
+        # self.statusBar().showMessage(str(sender.index) + " is clicked!!")
         i, j = sender.index
 
         # clear previous background color and recover its image
@@ -183,13 +245,29 @@ class App(QMainWindow):
 
         # exec a step
         if self.pieces[i][j].is_candidate:
+            moved = True
             old_color = self.board.color
+
+            # status bar: eating happens
+            if self.board.matrix[i][j] != 0:
+                self.statusBar().showMessage(
+                    "%s ate 1 %s!" % (NAMES[old_color], NAMES[-old_color])
+                )
+            else:
+                self.statusBar().showMessage("%s moved." % NAMES[old_color])
 
             self.board.exec(self.selected_index, sender.index)
 
+            # alert to user that color doesn't change
+            if self.board.color == old_color:
+                self.statusBar().showMessage(
+                    "%s cannot go, switched to %s again!"
+                    % (NAMES[-self.board.color], NAMES[self.board.color])
+                )
+
             self.avail_steps_cache.remove((i, j))
             self.pieces[i][j].is_candidate = False
-            self.pieces[i][j].setStyleSheet(r'QLabel {}')
+            self.pieces[i][j].setStyleSheet(r"QLabel {}")
             if old_color == B:
                 self.pieces[i][j].setPixmap(self.black)
             else:
@@ -237,8 +315,13 @@ class App(QMainWindow):
                 self.pieces[avail_i][avail_j].is_candidate = True
             self.avail_steps_cache = avail_steps[:]
 
+        # judge if this causes a terminal state
+        if moved:
+            self.round_switched.emit()
+
 
 if __name__ == "__main__":
+    args = parser.parse_args()
     app = QApplication(sys.argv)
-    ex = App()
+    ex = App(args.engine_a, args.engine_b)
     sys.exit(app.exec_())

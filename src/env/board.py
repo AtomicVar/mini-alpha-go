@@ -56,6 +56,9 @@ class Board:
         self.is_terminal = False
 
     def exec(self, source: tuple, target: tuple) -> None:
+        if source is None:
+            return
+
         t_row, t_col = target
         s_row, s_col = source
 
@@ -85,7 +88,7 @@ class Board:
         # invert current color
         else:
             self.color *= -1
-        
+
         # test if is terminal
         if self.counts[-self.color] == 0:
             self.is_terminal = True
