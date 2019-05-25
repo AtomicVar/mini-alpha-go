@@ -222,8 +222,6 @@ class App(QMainWindow):
             )
             if reply == QMessageBox.Yes:
                 self.board = Board()
-                self.timer = QTimer()
-                self.timer.timeout.connect(self.update_time)
                 self.time = [None, 0, 0]
                 self.update_pieces()
                 self.update_scoreboard()
@@ -255,8 +253,6 @@ class App(QMainWindow):
             )
             if reply == QMessageBox.Yes:
                 self.board = Board()
-                self.timer = QTimer()
-                self.timer.timeout.connect(self.update_time)
                 self.time = [None, 0, 0]
                 self.update_pieces()
                 self.update_scoreboard()
@@ -286,9 +282,11 @@ class App(QMainWindow):
         self.move(qr.topLeft())
 
     def update_time(self):
-        self.time[self.board.color] += 0.01
-        self.b_time.setText("BLACK time: %4.1f s" % self.time[B])
-        self.w_time.setText("WHITE time: %4.1f s" % self.time[W])
+        if not self.board.is_terminal:
+            print(self.time[self.board.color])
+            self.time[self.board.color] += 0.01
+            self.b_time.setText("BLACK time: %4.1f s" % self.time[B])
+            self.w_time.setText("WHITE time: %4.1f s" % self.time[W])
 
     def update_scoreboard(self):
         self.name.setText(NAMES[self.board.color])
