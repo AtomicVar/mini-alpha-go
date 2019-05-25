@@ -73,6 +73,17 @@ class Board:
         if self.matrix[t_row][t_col] == -self.color:
             self.counts[-self.color] -= 1
 
+        # update checkers count
+        self.row_checkers[s_row] -= 1
+        self.col_checkers[s_col] -= 1
+        self.maindiag_checkers[s_col - s_row] -= 1
+        self.paradiag_checkers[7 - s_col - s_row] -= 1
+        if self.matrix[t_row][t_col] == 0:
+            self.row_checkers[t_row] += 1
+            self.col_checkers[t_col] += 1
+            self.maindiag_checkers[t_col - t_row] += 1
+            self.paradiag_checkers[7 - t_col - t_row] += 1
+
         # set target
         self.matrix[t_row][t_col] = self.color
 
