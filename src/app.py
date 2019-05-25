@@ -5,22 +5,15 @@ import argparse
 import os
 import sys
 from copy import deepcopy
-import time
 from os.path import join
 
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer, QThread
-from PyQt5.QtGui import QColor, QFont, QIcon, QMouseEvent, QPainter, QPalette, QPixmap
+from PyQt5.QtGui import QColor, QFont, QIcon, QMouseEvent, QPixmap
 from PyQt5.QtWidgets import (
     QApplication,
     QDesktopWidget,
-    QGridLayout,
-    QHBoxLayout,
     QLabel,
-    QLCDNumber,
     QMainWindow,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
     QMessageBox,
 )
 
@@ -198,10 +191,10 @@ class App(QMainWindow):
 
     def spawn_new_thread(self):
         self.t = Worker(self.engine[self.board.color], deepcopy(self.board))
-        self.t.signal.connect(self.update_fromw_workers)
+        self.t.signal.connect(self.update_from_workers)
         self.t.start()
 
-    def update_fromw_workers(self, result):
+    def update_from_workers(self, result):
         if not self.board.is_terminal:
             source, target = result
             self.update_statusbar(source, target)
@@ -283,7 +276,6 @@ class App(QMainWindow):
 
     def update_time(self):
         if not self.board.is_terminal:
-            print(self.time[self.board.color])
             self.time[self.board.color] += 0.01
             self.b_time.setText("BLACK time: %4.1f s" % self.time[B])
             self.w_time.setText("WHITE time: %4.1f s" % self.time[W])
