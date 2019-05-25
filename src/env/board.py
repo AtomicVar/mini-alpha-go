@@ -168,71 +168,71 @@ class Board:
 
                     # 向右上走
                     if (
-                        i - n_md >= 0
-                        and j + n_md < 8
-                        and self.matrix[i - n_md][j + n_md] != color
+                        i - n_pd >= 0
+                        and j + n_pd < 8
+                        and self.matrix[i - n_pd][j + n_pd] != color
                     ):
                         no_enemy = True
-                        for d in range(1, n_md):
+                        for d in range(1, n_pd):
                             if self.matrix[i - d][j + d] == -color:
                                 no_enemy = False
                                 break
                         if no_enemy:
                             if (i, j) in steps:
-                                steps[(i, j)].append((i - n_md, j + n_md))
+                                steps[(i, j)].append((i - n_pd, j + n_pd))
                             else:
-                                steps[(i, j)] = [(i - n_md, j + n_md)]
+                                steps[(i, j)] = [(i - n_pd, j + n_pd)]
 
                     # 向左下走
                     if (
-                        i + n_md < 8
-                        and j - n_md >= 0
-                        and self.matrix[i + n_md][j - n_md] != color
+                        i + n_pd < 8
+                        and j - n_pd >= 0
+                        and self.matrix[i + n_pd][j - n_pd] != color
                     ):
                         no_enemy = True
-                        for d in range(1, n_md):
+                        for d in range(1, n_pd):
                             if self.matrix[i + d][j - d] == -color:
                                 no_enemy = False
                                 break
                         if no_enemy:
                             if (i, j) in steps:
-                                steps[(i, j)].append((i + n_md, j - n_md))
+                                steps[(i, j)].append((i + n_pd, j - n_pd))
                             else:
-                                steps[(i, j)] = [(i + n_md, j - n_md)]
+                                steps[(i, j)] = [(i + n_pd, j - n_pd)]
 
                     # 向左上走
                     if (
-                        i - n_pd >= 0
-                        and j - n_pd >= 0
-                        and self.matrix[i - n_pd][j - n_pd] != color
+                        i - n_md >= 0
+                        and j - n_md >= 0
+                        and self.matrix[i - n_md][j - n_md] != color
                     ):
                         no_enemy = True
-                        for d in range(1, n_pd):
+                        for d in range(1, n_md):
                             if self.matrix[i - d][j - d] == -color:
                                 no_enemy = False
                                 break
                         if no_enemy:
                             if (i, j) in steps:
-                                steps[(i, j)].append((i - n_pd, j - n_pd))
+                                steps[(i, j)].append((i - n_md, j - n_md))
                             else:
-                                steps[(i, j)] = [(i - n_pd, j - n_pd)]
+                                steps[(i, j)] = [(i - n_md, j - n_md)]
 
                     # 向右下走
                     if (
-                        i + n_pd < 8
-                        and j + n_pd < 8
-                        and self.matrix[i + n_pd][j + n_pd] != color
+                        i + n_md < 8
+                        and j + n_md < 8
+                        and self.matrix[i + n_md][j + n_md] != color
                     ):
                         no_enemy = True
-                        for d in range(1, n_pd):
+                        for d in range(1, n_md):
                             if self.matrix[i + d][j + d] == -color:
                                 no_enemy = False
                                 break
                         if no_enemy:
                             if (i, j) in steps:
-                                steps[(i, j)].append((i + n_pd, j + n_pd))
+                                steps[(i, j)].append((i + n_md, j + n_md))
                             else:
-                                steps[(i, j)] = [(i + n_pd, j + n_pd)]
+                                steps[(i, j)] = [(i + n_md, j + n_md)]
         return steps
 
     def get_avail_steps_in(self, loc: tuple, color) -> list:
