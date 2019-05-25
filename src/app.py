@@ -21,6 +21,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QVBoxLayout,
     QWidget,
+    QMessageBox,
 )
 
 from env.board import B, Board, W
@@ -156,28 +157,58 @@ class App(QMainWindow):
         # show ui
         self.show()
 
+        # play
+        if self.engine[B] == "human":
+            pass
+        elif self.engine[W] == "human" and self.engine[B] != "human":
+            self.run_game()
+        else:
+            while not self.board.is_terminal:
+                self.run_game()
+
     def run_game(self):
         if not self.board.is_terminal:
             # black first
             if self.engine[self.board.color] != "human":
-                source, target = self.engine[self.board.color].exec(deepcopy(self.board))
-                if source is  None:
-                    self.statusBar().showMessage(
-                        "%s cannot go, switched to %s again!"
-                        % (NAMES[-self.board.color], NAMES[self.board.color])
-                    )
-                else:
-                    if self.board.matrix[target[0]][target[1]] != 0:
-                        self.statusBar().showMessage(
-                            "%s ate 1 %s!" % (NAMES[self.board.color], NAMES[-self.board.color])
-                        )
-                    else:
-                        self.statusBar().showMessage("%s moved." % NAMES[self.board.color])
+                source, target = self.engine[self.board.color].exec(
+                    deepcopy(self.board)
+                )
+                self.update_statusbar(source, target)
 
                 self.board.exec(source, target)
 
-                self.update_pieces(source, target)
-                self.render_scoreboard()
+                self.update_pieces()
+                self.update_scoreboard()
+        else:
+            winner = ["BLACK", "WHITE"][self.board.counts[W] > self.board.counts[B]]
+            reply = QMessageBox.question(
+                self,
+                "Game over!",
+                "The winner is %s! Restart the game?" % winner,
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes,
+            )
+            if reply == QMessageBox.Yes:
+                self.board = Board()
+                self.update_pieces()
+                self.update_scoreboard()
+                self.run_game()
+            else:
+                self.close()
+
+    def update_statusbar(self, source, target):
+        if source is None:
+            self.statusBar().showMessage(
+                "%s cannot go, switched to %s again!"
+                % (NAMES[-self.board.color], NAMES[self.board.color])
+            )
+        else:
+            if self.board.matrix[target[0]][target[1]] != 0:
+                self.statusBar().showMessage(
+                    "%s ate 1 %s!" % (NAMES[self.board.color], NAMES[-self.board.color])
+                )
+            else:
+                self.statusBar().showMessage("%s moved." % NAMES[self.board.color])
 
     def center(self):
         qr = self.frameGeometry()
@@ -185,7 +216,7 @@ class App(QMainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    def render_scoreboard(self):
+    def update_scoreboard(self):
         self.name.setText(NAMES[self.board.color])
         self.name.setStyleSheet(r"QLabel {color: " + NAMES[self.board.color] + "}")
         self.b_score.setText("BLACK: %d" % self.board.counts[B])
@@ -212,14 +243,16 @@ class App(QMainWindow):
                 else:
                     continue
             self.pieces.append(row)
-    
-    def update_pieces(self, source, target):
+
+    def update_pieces(self):
         for i in range(8):
             for j in range(8):
-                self.pieces[i][j].setPixmap([self.empty, self.black, self.white][self.board.matrix[i][j]])
+                self.pieces[i][j].setPixmap(
+                    [self.empty, self.black, self.white][self.board.matrix[i][j]]
+                )
                 self.pieces[i][j].is_candidate = False
                 self.pieces[i][j].setStyleSheet(r"QLabel {}")
-
+    
     def keyPressEvent(self, e):
         if e.key() in [Qt.Key_Escape, ord("Q")]:
             self.close()
@@ -227,9 +260,11 @@ class App(QMainWindow):
             print(e.key())
 
     def mouseClickEvent(self):
+        if self.engine[self.board.color] != "human":
+            return
+
         moved = False
         sender = self.sender()
-        # self.statusBar().showMessage(str(sender.index) + " is clicked!!")
         i, j = sender.index
 
         # clear previous background color and recover its image
@@ -277,7 +312,7 @@ class App(QMainWindow):
             self.pieces[prev_i][prev_j].setPixmap(self.empty)
 
             # update scoreboard
-            self.render_scoreboard()
+            self.update_scoreboard()
 
         # clear previous available steps
         for step in self.avail_steps_cache:
