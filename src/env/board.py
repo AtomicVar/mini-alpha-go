@@ -101,7 +101,7 @@ class Board:
             self.color *= -1
 
         # test if is terminal
-        if self.counts[-self.color] == 0:
+        if self.counts[-self.color] == 1:
             self.is_terminal = True
 
     def get_avail_steps(self, color: int) -> dict:
