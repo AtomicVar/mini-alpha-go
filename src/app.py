@@ -8,7 +8,7 @@ from copy import deepcopy
 import time
 from os.path import join
 
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal, QTimer, QThread
 from PyQt5.QtGui import QColor, QFont, QIcon, QMouseEvent, QPainter, QPalette, QPixmap
 from PyQt5.QtWidgets import (
     QApplication,
@@ -51,6 +51,19 @@ parser.add_argument(
 )
 
 
+class Worker(QThread):
+    signal = pyqtSignal(tuple)
+
+    def __init__(self, engine, board):
+        QThread.__init__(self)
+        self.engine = engine
+        self.board = board
+
+    def run(self):
+        result = self.engine.exec(self.board)
+        self.signal.emit(result)
+
+
 class Piece(QLabel):
     """ Piece: clickable QLabel """
 
@@ -65,6 +78,7 @@ class Piece(QLabel):
 
 class App(QMainWindow):
     round_switched = pyqtSignal()
+    worker_signal = pyqtSignal()
 
     def __init__(self, engine_a: str, engine_b: str):
         super().__init__()
@@ -73,11 +87,14 @@ class App(QMainWindow):
         self.height = 360
 
         self.board = Board()
-        self.rounds = 0
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_time)
+        self.time = [None, 0, 0]
 
         Engine_A = __import__("engines." + engine_a).__dict__[engine_a].engine
         Engine_B = __import__("engines." + engine_b).__dict__[engine_b].engine
         self.engine = ["", Engine_A(), Engine_B()]
+        self.worker_signal.connect(self.spawn_new_thread)
         self.round_switched.connect(self.run_game)
 
         self.black = QPixmap(join(SCRIPT_DIR, "../assets/black.png"))
@@ -106,7 +123,7 @@ class App(QMainWindow):
         self.setPalette(p)
 
         # banner
-        banner = QLabel("Mini Alpha-Go", self)
+        banner = QLabel("Min! A1pha-G0", self)
         banner.setFont(QFont("Arial", 20, QFont.Bold, True))
         banner.resize(200, 40)
         banner.move(SIDER_L, 20)
@@ -141,7 +158,21 @@ class App(QMainWindow):
         self.w_score.move(SIDER_L, 250)
         self.w_score.setStyleSheet(r"QLabel {color: white}")
 
+        # Time board
+        self.b_time = QLabel("BLACK time: 0.0 s", self)
+        self.b_time.setFont(QFont("Consolas", 12, QFont.Bold))
+        self.b_time.resize(200, 40)
+        self.b_time.move(SIDER_L, 280)
+        self.b_time.setStyleSheet(r"QLabel {color: black}")
+
+        self.w_time = QLabel("WHITE time: 0.0 s", self)
+        self.w_time.setFont(QFont("Consolas", 12, QFont.Bold))
+        self.w_time.resize(200, 40)
+        self.w_time.move(SIDER_L, 300)
+        self.w_time.setStyleSheet(r"QLabel {color: white}")
+
         # time duration
+        self.timer.start(10)
 
         # Chess board
         chessbd = QLabel(self)
@@ -160,15 +191,49 @@ class App(QMainWindow):
         # play
         if self.engine[B] == "human":
             pass
-        elif self.engine[W] == "human" and self.engine[B] != "human":
+        elif self.engine[W] == "human":
             self.run_game()
         else:
-            while not self.board.is_terminal:
-                self.run_game()
+            self.spawn_new_thread()
+
+    def spawn_new_thread(self):
+        self.t = Worker(self.engine[self.board.color], deepcopy(self.board))
+        self.t.signal.connect(self.update_fromw_workers)
+        self.t.start()
+
+    def update_fromw_workers(self, result):
+        if not self.board.is_terminal:
+            source, target = result
+            self.update_statusbar(source, target)
+
+            self.board.exec(source, target)
+
+            self.update_pieces()
+            self.update_scoreboard()
+            self.spawn_new_thread()
+        else:
+            winner = ["BLACK", "WHITE"][self.board.counts[W] > self.board.counts[B]]
+            reply = QMessageBox.question(
+                self,
+                "Game over!",
+                "The winner is %s! Restart the game?" % winner,
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes,
+            )
+            if reply == QMessageBox.Yes:
+                self.board = Board()
+                self.timer = QTimer()
+                self.timer.timeout.connect(self.update_time)
+                self.time = [None, 0, 0]
+                self.update_pieces()
+                self.update_scoreboard()
+                self.update_time()
+                self.spawn_new_thread()
+            else:
+                self.close()
 
     def run_game(self):
         if not self.board.is_terminal:
-            # black first
             if self.engine[self.board.color] != "human":
                 source, target = self.engine[self.board.color].exec(
                     deepcopy(self.board)
@@ -190,8 +255,12 @@ class App(QMainWindow):
             )
             if reply == QMessageBox.Yes:
                 self.board = Board()
+                self.timer = QTimer()
+                self.timer.timeout.connect(self.update_time)
+                self.time = [None, 0, 0]
                 self.update_pieces()
                 self.update_scoreboard()
+                self.update_time()
                 self.run_game()
             else:
                 self.close()
@@ -215,6 +284,11 @@ class App(QMainWindow):
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
+
+    def update_time(self):
+        self.time[self.board.color] += 0.01
+        self.b_time.setText("BLACK time: %4.1f s" % self.time[B])
+        self.w_time.setText("WHITE time: %4.1f s" % self.time[W])
 
     def update_scoreboard(self):
         self.name.setText(NAMES[self.board.color])
@@ -252,7 +326,7 @@ class App(QMainWindow):
                 )
                 self.pieces[i][j].is_candidate = False
                 self.pieces[i][j].setStyleSheet(r"QLabel {}")
-    
+
     def keyPressEvent(self, e):
         if e.key() in [Qt.Key_Escape, ord("Q")]:
             self.close()
