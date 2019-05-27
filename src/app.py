@@ -27,7 +27,9 @@ NAMES = ["", "BLACK", "WHITE"]
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))  # 脚本目录路径
 
-parser = argparse.ArgumentParser(description="Mini Alpha-Go.")
+parser = argparse.ArgumentParser(
+    description="Mini Alpha-Go. Available engines: random, greedy, human"
+)
 parser.add_argument(
     "-a",
     "--engine_a",
@@ -75,7 +77,7 @@ class App(QMainWindow):
 
     def __init__(self, engine_a: str, engine_b: str):
         super().__init__()
-        self.title = "Mini Alpha-Go"
+        self.title = "Mini Alpha-Go (Black: %s vs White: %s)" % (engine_a, engine_b)
         self.width = 640
         self.height = 360
 
@@ -267,6 +269,8 @@ class App(QMainWindow):
                 )
             else:
                 self.statusBar().showMessage("%s moved." % NAMES[self.board.color])
+        self.time = [None, 0, 0]
+        self.update_time()
 
     def center(self):
         qr = self.frameGeometry()
