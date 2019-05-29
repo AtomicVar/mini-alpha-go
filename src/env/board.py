@@ -248,6 +248,13 @@ class Board:
         from pprint import pprint
 
         pprint(self.matrix)
+    
+    def hash_state(self) -> str:
+        ret = ''
+        for row in range(8):
+            for col in range(8):
+                ret += str(self.matrix[row][col])
+        return ret
 
 
 if __name__ == "__main__":

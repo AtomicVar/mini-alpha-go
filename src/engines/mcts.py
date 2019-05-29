@@ -23,9 +23,10 @@ class MonteCarlo(object):
     def update(self,state):
         self.cumulated_states.append(state)
 
-    def get_play(self):
+    def get_play(self,board:Board):
         self.max_depth = 0
-        state = self.cumulated_states[-1]
+        #state = self.cumulated_states[-1]
+        state = board
         player = state.color#current_player(state)
         legal = list(state.avail_steps[player].keys())
 
@@ -50,20 +51,24 @@ class MonteCarlo(object):
             for avail_target in state_copy.avail_steps[player][p]:
                 state_copy.exec(p,avail_target)
                 state_matrix = state_copy.hash_state()
-                moves_states.append((p,state_copy,state_matrix))
+                moves_states.append((p,avail_target,state_copy,state_matrix))
                 state_copy = deepcopy(state)
 
         
         # Display the number of calls of 'run_simulation' and the 
         # time elapsed.
         print(games, datetime.datetime.utcnow() - begin)
+        if player == 1:
+            print('Now player:','Black')
+        else:
+            print('Now player:','White')
 
         # Pick the move with the highest percentage of wins.
         
 
-        percent_wins, move,next_state,state_mat = max(
+        percent_wins, move,target,next_state,state_mat = max(
             ((self.wins.get((player, S_mat), 0) / self.plays.get((player, S_mat), 1), 
-            p,S,S_mat) for p, S,S_mat in moves_states),
+            p,t,S,S_mat) for p, t,S,S_mat in moves_states),
             key = lambda x: x[0]
         )
         
@@ -73,7 +78,7 @@ class MonteCarlo(object):
             ((100 * self.wins.get((player, S_mat), 0) / self.plays.get((player, S_mat), 1),
             self.wins.get((player, S_mat), 0),
             self.plays.get((player, S_mat), 0), p)
-            for p, S,S_mat in moves_states),
+            for p, t,S,S_mat in moves_states),
             reverse = True
         ):
             
@@ -82,7 +87,7 @@ class MonteCarlo(object):
         print("Maximum depth searched:", self.max_depth)
 
         
-        return move,next_state
+        return move,target,next_state
     
     def run_simulation(self):  
         plays, wins = self.plays, self.wins
@@ -157,16 +162,28 @@ class MonteCarlo(object):
             if player == winner:
                 #print('fuckfuck')
                 self.wins[(player, state_mat)] += 1
+    def exec(self,board:Board) -> (tuple,tuple):
+        
+        move,t,next_s = self.get_play(board)
+        if move == None:
+            loser = self.cumulated_states[-1].color
+            print('The winner is ',-loser)
+        self.update(next_s)
+        source = move
+        target = t
+        return source,target
 
+engine = MonteCarlo
+"""
 if __name__ == "__main__":
     mc = MonteCarlo()
     while True:
-        move,next_state = mc.get_play()
+        move,t,next_state = mc.get_play()
         if move == None:
             loser = mc.cumulated_states[-1].color
             print('The winner is ',-loser)
         #print(mc.wins)
         #print(mc.plays)
         mc.update(next_state)
-
+"""
 
