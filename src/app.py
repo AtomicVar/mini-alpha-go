@@ -85,6 +85,7 @@ class App(QMainWindow):
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_time)
         self.time = [None, 0, 0]
+        self.threads = []
 
         Engine_A = __import__("engines." + engine_a).__dict__[engine_a].engine
         Engine_B = __import__("engines." + engine_b).__dict__[engine_b].engine
@@ -192,9 +193,10 @@ class App(QMainWindow):
             self.spawn_new_thread()
 
     def spawn_new_thread(self):
-        self.t = Worker(self.engine[self.board.color], deepcopy(self.board))
-        self.t.signal.connect(self.update_from_workers)
-        self.t.start()
+        t = Worker(self.engine[self.board.color], deepcopy(self.board))
+        t.signal.connect(self.update_from_workers)
+        t.start()
+        self.threads.append(t)
 
     def update_from_workers(self, result):
         if not self.board.is_terminal:
