@@ -103,6 +103,20 @@ class Board:
         # test if is terminal
         if self.counts[-self.color] == 1:
             self.is_terminal = True
+        else:
+            for i in range(8):
+                for j in range(8):
+                    if not self.has_color_around(i, j):
+                        return
+            self.is_terminal = True
+
+    def has_color_around(self, i, j):
+        for row in range(i - 1, i + 2):
+            for col in range(j - 1, j + 2):
+                if 0 <= row <= 7 and 0 <= col <= 7 and row != i and col != j:
+                    if self.matrix[row][col] == self.color:
+                        return True
+        return False
 
     def get_avail_steps(self, color: int) -> dict:
         steps = {}
@@ -248,9 +262,9 @@ class Board:
         from pprint import pprint
 
         pprint(self.matrix)
-    
+
     def hash_state(self) -> str:
-        ret = ''
+        ret = ""
         for row in range(8):
             for col in range(8):
                 ret += str(self.matrix[row][col])
