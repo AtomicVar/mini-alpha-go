@@ -169,9 +169,9 @@ class Board:
                     if labels[i][j] in equiv_labels:
                         labels[i][j] = min(labels[i][j], *equiv_labels[labels[i][j]])
                     max_label = max(max_label, labels[i][j])
-        from pprint import pprint
-        pprint(labels)
-        print(max_label)
+        # from pprint import pprint
+        # pprint(labels)
+        # print(max_label)
         return max_label == 1
         
     def get_avail_steps(self, color: int) -> dict:
