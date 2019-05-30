@@ -209,7 +209,7 @@ class App(QMainWindow):
             self.update_scoreboard()
             self.spawn_new_thread()
         else:
-            winner = ["BLACK", "WHITE"][self.board.counts[W] > self.board.counts[B]]
+            winner = NAMES[-self.board.color]
             reply = QMessageBox.question(
                 self,
                 "Game over!",
@@ -239,8 +239,8 @@ class App(QMainWindow):
 
                 self.update_pieces()
                 self.update_scoreboard()
-        else:
-            winner = ["BLACK", "WHITE"][self.board.counts[W] > self.board.counts[B]]
+        if self.board.is_terminal:
+            winner = NAMES[-self.board.color]
             reply = QMessageBox.question(
                 self,
                 "Game over!",
