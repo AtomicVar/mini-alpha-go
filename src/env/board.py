@@ -58,6 +58,10 @@ class Board:
     def exec(self, source: tuple, target: tuple) -> None:
         if source is None:
             return
+        if self.is_connected():
+            self.is_terminal = True
+            self.color *= -1
+            return
 
         t_row, t_col = target
         s_row, s_col = source
@@ -90,34 +94,86 @@ class Board:
         # update available cache
         self.avail_steps[-self.color] = self.get_avail_steps(-self.color)
 
+        # test if is terminal
+        if self.counts[-self.color] == 1:
+            self.is_terminal = True
+        elif self.is_connected():
+            self.is_terminal = True
+
         # if enemy cannot go, also update my available cache, and do not invert color
         if len(self.avail_steps[-self.color]) == 0:
             self.avail_steps[self.color] = self.get_avail_steps(self.color)
             # if me cannot go either, set current board to is_terminal
             if len(self.avail_steps[self.color]) == 0:
                 self.is_terminal = True
-        # invert current color
         else:
             self.color *= -1
 
-        # test if is terminal
-        if self.counts[-self.color] == 1:
-            self.is_terminal = True
-        else:
-            for i in range(8):
-                for j in range(8):
-                    if not self.has_color_around(i, j):
-                        return
-            self.is_terminal = True
+    def is_connected(self):
+        cur_label = 0
+        labels = [[0 for _ in range(8)] for _ in range(8)]
+        equiv_labels = {}
 
-    def has_color_around(self, i, j):
-        for row in range(i - 1, i + 2):
-            for col in range(j - 1, j + 2):
-                if 0 <= row <= 7 and 0 <= col <= 7 and row != i and col != j:
-                    if self.matrix[row][col] == self.color:
-                        return True
-        return False
+        def get_label_left(i, j):
+            if j == 0:
+                return 0
+            else:
+                return labels[i][j - 1]
 
+        def get_label_lefttop(i, j):
+            if j == 0 or i == 0:
+                return 0
+            else:
+                return labels[i - 1][j - 1]
+
+        def get_label_top(i, j):
+            if i == 0:
+                return 0
+            else:
+                return labels[i - 1][j]
+
+        def get_label_righttop(i, j):
+            if i == 0 or j == 7:
+                return 0
+            else:
+                return labels[i - 1][j + 1]
+
+        # first pass
+        for i in range(8):
+            for j in range(8):
+                if self.matrix[i][j] == self.color:
+                    four_labels = [get_label_left(i, j),get_label_lefttop(i, j),get_label_righttop(i, j),get_label_top(i, j) ]
+                    zeros = []
+                    non_zeros = []
+                    for k in range(4):
+                        if four_labels[k] == 0:
+                            zeros.append(four_labels[k])
+                        elif four_labels[k] not in non_zeros:
+                            non_zeros.append(four_labels[k])
+                    if len(zeros) == 4:
+                        labels[i][j] = cur_label + 1
+                        cur_label += 1
+                    elif len(non_zeros) == 1:
+                        labels[i][j] = non_zeros[0]
+                    else:
+                        labels[i][j] = non_zeros[0]
+                        if four_labels[0] in equiv_labels:
+                            equiv_labels[four_labels[0]].append(four_labels[1])
+                        else:
+                            equiv_labels[four_labels[0]] = [four_labels[1]]
+        # second pass
+        max_label = 0
+        for i in range(8):
+            for j in range(8):
+                if self.matrix[i][j] == self.color:
+                    if labels[i][j] in equiv_labels:
+                        labels[i][j] = min(labels[i][j], *equiv_labels[labels[i][j]])
+                    max_label = max(max_label, labels[i][j])
+        from pprint import pprint
+        pprint(labels)
+        print(max_label)
+        return max_label == 1
+        
     def get_avail_steps(self, color: int) -> dict:
         steps = {}
         for i in range(8):
@@ -274,3 +330,4 @@ class Board:
 if __name__ == "__main__":
     board = Board()
     board.print_board()
+    print(board.is_connected())
