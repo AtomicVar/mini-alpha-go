@@ -28,7 +28,7 @@ NAMES = ["", "BLACK", "WHITE"]
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))  # 脚本目录路径
 
 parser = argparse.ArgumentParser(
-    description="Mini Alpha-Go. Available engines: random, greedy, human"
+    description="Mini Alpha-Go. Available engines: mcts, random, greedy, human"
 )
 parser.add_argument(
     "-a",
