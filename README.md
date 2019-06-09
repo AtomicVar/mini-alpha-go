@@ -1,4 +1,4 @@
-<p align="center"><img src="https://s2.ax1x.com/2019/06/09/Vs2Vv6.png"><h1>Min! A1pha-G0</h1></p>
+<p align="center"><img src="https://s2.ax1x.com/2019/06/09/Vs2Vv6.png"><h1 align="center">Min! A1pha-G0</h1></p>
 
 使用 MCTS 算法实现的集结棋 (Lines of Action)。
 
