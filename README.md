@@ -1,4 +1,4 @@
-<p align="center"><img src="https://s2.ax1x.com/2019/06/09/Vs2Vv6.png"><h1 align="center">Min! A1pha-G0</h1></p>
+<p align="center"><img src="https://s2.ax1x.com/2019/06/09/VsWgN4.png"><h1 align="center">Min! A1pha-G0</h1></p>
 
 使用 MCTS 算法实现的集结棋 (Lines of Action)。
 
@@ -19,7 +19,7 @@
 ## 三、实现的功能
 
 - 精美图形界面
-- 人机博弈
+- 人机博弈，对可走位置有视觉提示
 - 显示双方计算时间
 - 通过命令行参数动态调整双方引擎，实现模块化
 
